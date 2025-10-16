@@ -2,10 +2,15 @@ import numpy as np
 import tkinter as tk
 import random
 
-def normalize_a_vector(v):
-    m = np.linalg.norm(v)
-    return v / m
+def normalize_vector(v):
+    return v / np.linalg.norm(v)
 
+def angle_between_two_vectors(v, u):
+    v_norm = normalize_vector(v)
+    u_norm = normalize_vector(u)
+    dot = np.clip(np.dot(v_norm, u_norm), -1, 1)
+    return np.degrees(np.arccos(dot))
+    
 class Vector2D:
     def __init__(self, x = 0, y = 0):
         self.x = x
@@ -18,22 +23,37 @@ class RunningDot:
                                         self.position.x + size / 2, self.position.y + size / 2, fill = color)
         self.step = step
         self.direction = Vector2D()
+        self.gravity_toward_prioritized_direction = 4
         self.ticks_per_second = 20
+        self.color = color
 
     def tick(self):
-        self.direction = Vector2D(*normalize_a_vector((random.random() * 10 - 5, random.random() * 10 - 5)))
-
         x_position_before_moving = self.position.x
         y_position_before_moving = self.position.y
 
-        self.move_self_and_update_pos()
+        self.move_randomly_and_update_pos()
 
-        canvas.create_line(x_position_before_moving, y_position_before_moving, self.position.x, self.position.y, fill='white')
+        canvas.create_line(x_position_before_moving, y_position_before_moving, self.position.x, self.position.y, fill = self.color)
 
         root.after(1000 // self.ticks_per_second, self.tick)
 
-    def move_self_and_update_pos(self):
+    def move_randomly_and_update_pos(self, prioritized_direction = (1, 1)):
+        possible_directions = []
+        smallest_angle = 100
+        for i in range(self.gravity_toward_prioritized_direction):
+            possible_directions.append(normalize_vector((random.randint(-100, 100), random.randint(-100, 100))))
+
+        new_direction = Vector2D(*possible_directions[0])
+
+        for i in possible_directions:
+            if angle_between_two_vectors(i, prioritized_direction) < smallest_angle:
+                new_direction = Vector2D(*i)
+                smallest_angle = angle_between_two_vectors((self.direction.x, self.direction.y), prioritized_direction)
+
+        self.direction = new_direction
+
         canvas.move(self.shape, self.direction.x * self.step, self.direction.y * self.step)
+
         self.position.x += self.direction.x * self.step
         self.position.y += self.direction.y * self.step
 
@@ -50,5 +70,3 @@ dot1 = RunningDot()
 dot1.tick()
 
 root.mainloop()
-
-
