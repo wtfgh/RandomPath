@@ -2,6 +2,9 @@ import numpy as np
 import tkinter as tk
 import random
 
+import numpy.random
+
+
 def normalize_vector(v):
     return v / np.linalg.norm(v)
 
@@ -23,7 +26,8 @@ class RunningDot:
                                         self.position.x + size / 2, self.position.y + size / 2, fill = color)
         self.step = step
         self.direction = Vector2D()
-        self.gravity_toward_prioritized_direction = 4
+        self.possible_directions_to_take = 10
+        self.gravity_toward_prioritized_direction = 0
         self.ticks_per_second = 20
         self.color = color
 
@@ -39,18 +43,23 @@ class RunningDot:
 
     def move_randomly_and_update_pos(self, prioritized_direction = (1, 1)):
         possible_directions = []
-        smallest_angle = 100
-        for i in range(self.gravity_toward_prioritized_direction):
-            possible_directions.append(normalize_vector((random.randint(-100, 100), random.randint(-100, 100))))
+        for i in range(self.possible_directions_to_take):
+            possible_direction = normalize_vector((random.randint(-100, 100), random.randint(-100, 100)))
+
+            possible_directions.append(possible_direction)
 
         new_direction = Vector2D(*possible_directions[0])
 
-        for i in possible_directions:
-            if angle_between_two_vectors(i, prioritized_direction) < smallest_angle:
-                new_direction = Vector2D(*i)
-                smallest_angle = angle_between_two_vectors((self.direction.x, self.direction.y), prioritized_direction)
+        for i in range(len(possible_directions)):
+            for j in range(len(possible_directions)):
+                if (angle_between_two_vectors(possible_directions[i], prioritized_direction)
+                    < angle_between_two_vectors(possible_directions[j], prioritized_direction)):
+                        possible_directions[i], possible_directions[j] = possible_directions[j], possible_directions[i]
 
-        self.direction = new_direction
+        possible_directions_with_priority = possible_directions[:1 if self.gravity_toward_prioritized_direction == 1
+        else int((1 - self.gravity_toward_prioritized_direction) * self.possible_directions_to_take)]
+
+        self.direction = Vector2D(*possible_directions_with_priority[random.randint(0, len(possible_directions_with_priority) - 1)])
 
         canvas.move(self.shape, self.direction.x * self.step, self.direction.y * self.step)
 
