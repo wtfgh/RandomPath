@@ -51,7 +51,6 @@ class RunningDot:
 
         possible_directions = [(np.cos(np.radians(x)), np.sin(np.radians(x))) for x in angles]
 
-
         possible_directions_with_priority = possible_directions[:1 if gravity_toward_prioritized_direction == 1
         else int((1 - gravity_toward_prioritized_direction) * self.possible_directions_to_take)]
 
@@ -61,7 +60,6 @@ class RunningDot:
 
         self.position.x += self.direction.x * self.step
         self.position.y += self.direction.y * self.step
-
 
 root = tk.Tk()
 
