@@ -1,6 +1,7 @@
 import numpy as np
 import tkinter as tk
 import random
+import threading
 
 def normalize_vector(v):
     return v / np.linalg.norm(v)
@@ -24,10 +25,13 @@ class RunningDot:
         self.step = step
         self.direction = Vector2D()
         self.possible_directions_to_take = 100
-        self.ticks_per_second = 5
+        self.ticks_per_second = 20
         self.color = color
         self.gravity_slider = None
         self.priority_direction_slider = None
+
+    def start_moving(self):
+        return self.tick()
 
     def tick(self):
         x_position_before_moving = self.position.x
@@ -71,14 +75,36 @@ canvas.grid(row = 0, column = 1, rowspan = 10)
 
 dot1 = RunningDot()
 
-priority_direction_slider = tk.Scale(root, from_ = 0, to = 360, orient = 'horizontal', length = 200)
-priority_direction_slider.grid(row = 0, column = 0)
+dot1_text = tk.Label(root, text = 'White dot')
+dot1_text.grid(row = 0, column = 0)
 
-gravity_slider = tk.Scale(root, from_ = 0, to = 100, orient = 'horizontal', length = 200)
-gravity_slider.grid(row = 1, column = 0)
+priority_direction_slider = tk.Scale(root, from_ = 0, to = 360, orient = 'horizontal', length = 100)
+priority_direction_slider.grid(row = 1, column = 0)
+
+gravity_slider = tk.Scale(root, from_ = 0, to = 100, orient = 'horizontal', length = 100)
+gravity_slider.grid(row = 2, column = 0)
 
 dot1.gravity_slider = gravity_slider
 dot1.priority_direction_slider = priority_direction_slider
-dot1.tick()
+
+dot2 = RunningDot(color = 'red')
+
+dot2_text = tk.Label(root, text = 'Red dot')
+dot2_text.grid(row = 3, column = 0)
+
+priority_direction_slider = tk.Scale(root, from_ = 0, to = 360, orient = 'horizontal', length = 100)
+priority_direction_slider.grid(row = 4, column = 0)
+
+gravity_slider = tk.Scale(root, from_ = 0, to = 100, orient = 'horizontal', length = 100)
+gravity_slider.grid(row = 5, column = 0)
+
+dot2.gravity_slider = gravity_slider
+dot2.priority_direction_slider = priority_direction_slider
+
+t1 = threading.Thread(target = dot1.start_moving)
+t2 = threading.Thread(target = dot2.start_moving)
+
+t1.start()
+t2.start()
 
 root.mainloop()
